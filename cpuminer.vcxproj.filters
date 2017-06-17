@@ -31,6 +31,9 @@
     <ClCompile Include="sha3\sph_hamsi_helper.c">
       <Filter>sph</Filter>
     </ClCompile>
+    <ClCompile Include="sha3\sph_haval.c">
+      <Filter>sph</Filter>
+    </ClCompile>
     <ClCompile Include="sha3\sph_hefty1.c">
       <Filter>sph</Filter>
     </ClCompile>
@@ -41,6 +44,9 @@
       <Filter>sph</Filter>
     </ClCompile>
     <ClCompile Include="sha3\sph_luffa.c">
+      <Filter>sph</Filter>
+    </ClCompile>
+    <ClCompile Include="sha3\sph_ripemd.c">
       <Filter>sph</Filter>
     </ClCompile>
     <ClCompile Include="sha3\sph_sha2.c">
@@ -70,7 +76,7 @@
     <ClCompile Include="sha3\aes_helper.c">
       <Filter>sph</Filter>
     </ClCompile>
-    <ClCompile Include="sha3\sph_gost.c">
+    <ClCompile Include="sha3\gost_streebog.c">
       <Filter>sph</Filter>
     </ClCompile>
     <ClCompile Include="compat\winansi.c">
@@ -101,6 +107,9 @@
       <Filter>jansson</Filter>
     </ClCompile>
     <ClCompile Include="crypto\blake2s.c">
+      <Filter>crypto</Filter>
+    </ClCompile>
+    <ClCompile Include="crypto\blake2b.c">
       <Filter>crypto</Filter>
     </ClCompile>
     <ClCompile Include="crypto\c_skein.c">
@@ -183,6 +192,9 @@
     <ClCompile Include="algo\cryptonight.c">
       <Filter>algo</Filter>
     </ClCompile>
+    <ClCompile Include="algo\decred.c">
+      <Filter>algo</Filter>
+    </ClCompile>
     <ClCompile Include="algo\fresh.c">
       <Filter>algo</Filter>
     </ClCompile>
@@ -196,6 +208,9 @@
       <Filter>algo</Filter>
     </ClCompile>
     <ClCompile Include="algo\keccak.c">
+      <Filter>algo</Filter>
+    </ClCompile>
+    <ClCompile Include="algo\lbry.c">
       <Filter>algo</Filter>
     </ClCompile>
     <ClCompile Include="algo\luffa.c">
@@ -240,6 +255,15 @@
     <ClCompile Include="algo\skein.c">
       <Filter>algo</Filter>
     </ClCompile>
+    <ClCompile Include="algo\timetravel.c">
+      <Filter>algo</Filter>
+    </ClCompile>
+    <ClCompile Include="algo\veltor.c">
+      <Filter>algo</Filter>
+    </ClCompile>
+    <ClCompile Include="algo\x11evo.c">
+      <Filter>algo</Filter>
+    </ClCompile>
     <ClCompile Include="algo\x11.c">
       <Filter>algo</Filter>
     </ClCompile>
@@ -250,6 +274,12 @@
       <Filter>algo</Filter>
     </ClCompile>
     <ClCompile Include="algo\x15.c">
+      <Filter>algo</Filter>
+    </ClCompile>
+    <ClCompile Include="algo\x17.c">
+      <Filter>algo</Filter>
+    </ClCompile>
+    <ClCompile Include="algo\xevan.c">
       <Filter>algo</Filter>
     </ClCompile>
     <ClCompile Include="algo\pluck.c">
@@ -274,6 +304,9 @@
       <Filter>algo</Filter>
     </ClCompile>
     <ClCompile Include="algo\scrypt-jane.c">
+      <Filter>algo</Filter>
+    </ClCompile>
+    <ClCompile Include="algo\sia.c">
       <Filter>algo</Filter>
     </ClCompile>
     <ClCompile Include="algo\sibcoin.c">
@@ -350,7 +383,7 @@
     <ClInclude Include="sha3\sph_whirlpool.h">
       <Filter>sph</Filter>
     </ClInclude>
-    <ClInclude Include="sha3\sph_gost.h">
+    <ClInclude Include="sha3\gost_streebog.h">
       <Filter>sph</Filter>
     </ClInclude>
     <ClInclude Include="compat.h">

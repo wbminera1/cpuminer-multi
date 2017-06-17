@@ -19,6 +19,12 @@
  "/sys/class/hwmon/hwmon1/temp1_input"
 #define HWMON_ALT2 \
  "/sys/class/hwmon/hwmon0/temp1_input"
+#define HWMON_ALT3 \
+ "/sys/devices/platform/coretemp.0/hwmon/hwmon0/temp2_input"
+#define HWMON_ALT4 \
+ "/sys/class/hwmon/hwmon0/temp2_input"
+#define HWMON_ALT5 \
+ "/sys/class/hwmon/hwmon0/device/temp1_input"
 
 static float linux_cputemp(int core)
 {
@@ -31,6 +37,15 @@ static float linux_cputemp(int core)
 
 	if (!fd)
 		fd = fopen(HWMON_ALT2, "r");
+
+	if (!fd)
+		fd = fopen(HWMON_ALT3, "r");
+
+	if (!fd)
+		fd = fopen(HWMON_ALT4, "r");
+
+	if (!fd)
+                fd = fopen(HWMON_ALT5, "r");
 
 	if (!fd)
 		return tc;
@@ -55,6 +70,7 @@ static uint32_t linux_cpufreq(int core)
 	if (!fscanf(fd, "%d", &freq))
 		return freq;
 
+	fclose(fd);
 	return freq;
 }
 
@@ -122,7 +138,97 @@ static inline void cpuid(int functionnumber, int output[4]) {
 	}
 #endif
 }
-#endif /* !__arm__ */
+#else /* !__arm__ */
+#define cpuid(fn, out) out[0] = 0;
+#endif
+
+// For the i7-5775C will output : Intel(R) Core(TM) i7-5775C CPU @ 3.30GHz
+void cpu_getname(char *outbuf, size_t maxsz)
+{
+	memset(outbuf, 0, maxsz);
+#ifdef WIN32
+	char brand[0xC0] = { 0 };
+	int output[4] = { 0 }, ext;
+	cpuid(0x80000000, output);
+	ext = output[0];
+	if (ext >= 0x80000004) {
+		for (int i = 2; i <= (ext & 0xF); i++) {
+			cpuid(0x80000000+i, output);
+			memcpy(&brand[(i-2) * 4*sizeof(int)], output, 4*sizeof(int));
+		}
+		snprintf(outbuf, maxsz, "%s", brand);
+	} else {
+		// Fallback, for the i7-5775C will output
+		// Intel64 Family 6 Model 71 Stepping 1, GenuineIntel
+		snprintf(outbuf, maxsz, "%s", getenv("PROCESSOR_IDENTIFIER"));
+	}
+#else
+	// Intel(R) Xeon(R) CPU E3-1245 V2 @ 3.40GHz
+	FILE *fd = fopen("/proc/cpuinfo", "rb");
+	char *buf = NULL, *p, *eol;
+	size_t size = 0;
+	if (!fd) return;
+	while(getdelim(&buf, &size, 0, fd) != -1) {
+		if (buf && (p = strstr(buf, "model name\t")) && strstr(p, ":")) {
+			p = strstr(p, ":");
+			if (p) {
+				p += 2;
+				eol = strstr(p, "\n"); if (eol) *eol = '\0';
+				snprintf(outbuf, maxsz, "%s", p);
+			}
+			break;
+		}
+	}
+	free(buf);
+	fclose(fd);
+#endif
+}
+
+void cpu_getmodelid(char *outbuf, size_t maxsz)
+{
+	memset(outbuf, 0, maxsz);
+#ifdef WIN32
+	// For the i7-5775C will output 6:4701:8
+	snprintf(outbuf, maxsz, "%s:%s:%s", getenv("PROCESSOR_LEVEL"), // hexa ?
+		getenv("PROCESSOR_REVISION"), getenv("NUMBER_OF_PROCESSORS"));
+#else
+	FILE *fd = fopen("/proc/cpuinfo", "rb");
+	char *buf = NULL, *p, *eol;
+	int cpufam = 0, model = 0, stepping = 0;
+	size_t size = 0;
+	if (!fd) return;
+	while(getdelim(&buf, &size, 0, fd) != -1) {
+		if (buf && (p = strstr(buf, "cpu family\t")) && strstr(p, ":")) {
+			p = strstr(p, ":");
+			if (p) {
+				p += 2;
+				cpufam = atoi(p);
+			}
+		}
+		if (buf && (p = strstr(buf, "model\t")) && strstr(p, ":")) {
+			p = strstr(p, ":");
+			if (p) {
+				p += 2;
+				model = atoi(p);
+			}
+		}
+		if (buf && (p = strstr(buf, "stepping\t")) && strstr(p, ":")) {
+			p = strstr(p, ":");
+			if (p) {
+				p += 2;
+				stepping = atoi(p);
+			}
+		}
+		if (cpufam && model && stepping) {
+			snprintf(outbuf, maxsz, "%x:%02x%02x:%d", cpufam, model, stepping, num_cpus);
+			outbuf[maxsz-1] = '\0';
+			break;
+		}
+	}
+	free(buf);
+	fclose(fd);
+#endif
+}
 
 // http://en.wikipedia.org/wiki/CPUID
 #define OSXSAVE_Flag  (1 << 27)
@@ -148,7 +254,7 @@ bool has_aes_ni()
 #endif
 }
 
-void bestcpu_feature(char *outbuf, int maxsz)
+void cpu_bestfeature(char *outbuf, size_t maxsz)
 {
 #ifdef __arm__
 	sprintf(outbuf, "ARM");
@@ -160,7 +266,7 @@ void bestcpu_feature(char *outbuf, int maxsz)
 	if ((cpu_info[2] & AVX1_Flag) && (cpu_info_adv[1] & AVX2_Flag))
 		sprintf(outbuf, "AVX2");
 	else if (cpu_info[2] & AVX1_Flag)
-		sprintf(outbuf, "AVX1");
+		sprintf(outbuf, "AVX");
 	else if (cpu_info[2] & FMA3_Flag)
 		sprintf(outbuf, "FMA3");
 	else if (cpu_info[2] & XOP_Flag)

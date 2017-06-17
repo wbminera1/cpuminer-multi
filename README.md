@@ -27,39 +27,47 @@ Algorithms
  * ✓ __axiom__ (Axiom Shabal-256 based MemoHash)
  * ✓ __bastion__ (Joincoin [J])
  * ✓ __blake__ (Saffron [SFR] Blake-256)
+ * ✓ __blake2s__ (NevaCoin Blake2-S 256)
  * ✓ __bmw__ (Midnight [MDT] BMW-256)
- * ✓ __cryptonight__ (Bytecoin [BCN], Monero)
+ * ✓ __cryptonight__ (Bytecoin [BCN], Monero [XMR])
  * ✓ __cryptonight-light__ (Aeon)
+ * ✓ __decred__ (Blake256-14 [DCR])
  * ✓ __dmd-gr__ (Diamond-Groestl)
  * ✓ __fresh__ (FreshCoin)
  * ✓ __groestl__ (Groestlcoin)
- * ✓ __lyra2RE__ (Lyrabar, Cryptocoin)
+ * ✓ __lbry__ (LBRY Credits [LBC])
+ * ✓ __lyra2RE__ (Cryptocoin)
  * ✓ __lyra2REv2__ (VertCoin [VTC])
- * ✓ __myr-gr__ (Myriad-Groestl)
+ * ✓ __myr-gr__ Myriad-Groestl (MyriadCoin [MYR])
  * ✓ __neoscrypt__ (Feathercoin)
  * ✓ __nist5__ (MistCoin [MIC], TalkCoin [TAC], ...)
  * ✓ __pentablake__ (Joincoin)
  * ✓ __pluck__ (Supcoin [SUP])
  * ✓ __quark__ (Quarkcoin)
- * ✓ __qubit__ (MyriadCoin [MYR])
+ * ✓ __qubit__ (GeoCoin)
  * ✓ __skein__ (Skeincoin, Myriadcoin, Xedoscoin, ...)
  * ✓ __skein2__ (Woodcoin)
  * ✓ __s3__ (OneCoin)
+ * ✓ __sia__ (Reversed Blake2B for SIA [SC])
+ * ✓ __sib__ X11 + gost streebog (SibCoin)
+ * ✓ __timetravel__ Permuted serie of 8 algos (MachineCoin [MAC])
  * ✓ __vanilla__ (Blake-256 8-rounds - double sha256 [VNL])
+ * ✓ __veltor__ (Veltor [VLT])
+ * ✓ __x11evo__ (Revolver [XRE])
  * ✓ __x11__ (Darkcoin [DRK], Hirocoin, Limecoin, ...)
  * ✓ __x13__ (Sherlockcoin, [ACE], [B2B], [GRC], [XHC], ...)
  * ✓ __x14__ (X14, Webcoin [WEB])
  * ✓ __x15__ (RadianceCoin [RCE])
- * ✓ __yescrypt__ (GlobalBoostY [BSTY], Unitus [UIS])
+ * ✓ __x17__ (Verge [XVG])
+ * ✓ __yescrypt__ (GlobalBoostY [BSTY], Unitus [UIS], MyriadCoin [MYR])
  * ✓ __zr5__ (Ziftrcoin [ZRC])
 
 #### Implemented, but untested
- * ? blake2s
  * ? hefty1 (Heavycoin)
  * ? keccak (Maxcoin  HelixCoin, CryptoMeth, Galleon, 365coin, Slothcoin, BitcointalkCoin)
  * ? luffa (Joincoin, Doomcoin)
  * ? shavite3 (INKcoin)
- * ? sib X11 + gost (SibCoin)
+ * ? xevan (BitSend [BSD])
 
 #### Planned support for
  * *scrypt-jane* (YaCoin, CopperBars, Pennies, Tickets, etc..)
@@ -91,7 +99,7 @@ _OR_
  * make
 
 #### Note for Debian/Ubuntu users:
- * apt-get install autoconf pkg-config libcurl4-openssl-dev libjansson-dev libssl-dev libgmp-dev
+ * apt-get install automake autoconf pkg-config libcurl4-openssl-dev libjansson-dev libssl-dev libgmp-dev make g++
 
 #### Notes for AIX users:
  * To build a 64-bit binary, export OBJECT_MODE=64
