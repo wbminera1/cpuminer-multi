@@ -168,9 +168,6 @@ double opt_max_diff = 0.0;
 double opt_max_rate = 0.0;
 
 uint32_t opt_work_size = 0; /* default */
-char *opt_api_allow = NULL;
-int opt_api_remote = 0;
-int opt_api_listen = 4048; /* 0 to disable */
 
 #ifdef HAVE_GETOPT_LONG
 #include <getopt.h>
@@ -2179,37 +2176,13 @@ static void strhide(char *s)
 void parse_arg(int key, char *arg)
 {
 	char *p;
-	int v, i;
+	int v;
 	uint64_t ul;
 	double d;
 
 	switch(key) {
 		if (!opt_nfactor && opt_algo == ALGO_SCRYPT)
             opt_nfactor = 19;
-		break;
-	case 'b':
-		p = strstr(arg, ":");
-		if (p) {
-			/* ip:port */
-			if (p - arg > 0) {
-				free(opt_api_allow);
-				opt_api_allow = strdup(arg);
-				opt_api_allow[p - arg] = '\0';
-			}
-			opt_api_listen = atoi(p + 1);
-		}
-		else if (arg && strstr(arg, ".")) {
-			/* ip only */
-			free(opt_api_allow);
-			opt_api_allow = strdup(arg);
-		}
-		else if (arg) {
-			/* port or 0 to disable */
-			opt_api_listen = atoi(arg);
-		}
-		break;
-	case 1030: /* --api-remote */
-		opt_api_remote = 1;
 		break;
 	case 'n':
 		break;
@@ -2618,7 +2591,6 @@ int main(int argc, char *argv[]) {
 
 	rpc_user = strdup("");
 	rpc_pass = strdup("");
-	opt_api_allow = strdup("127.0.0.1"); /* 0.0.0.0 for all ips */
 
 #if defined(WIN32)
 	SYSTEM_INFO sysinfo;
@@ -2804,21 +2776,6 @@ int main(int argc, char *argv[]) {
 		}
 		if (have_stratum)
 			tq_push(thr_info[stratum_thr_id].q, strdup(rpc_url));
-	}
-
-	if (opt_api_listen) {
-		/* api thread */
-		api_thr_id = opt_n_threads + 3;
-		thr = &thr_info[api_thr_id];
-		thr->id = api_thr_id;
-		thr->q = tq_new();
-		if (!thr->q)
-			return 1;
-		err = thread_create(thr, api_thread);
-		if (err) {
-			applog(LOG_ERR, "api thread create failed");
-			return 1;
-		}
 	}
 
 	/* start mining threads */

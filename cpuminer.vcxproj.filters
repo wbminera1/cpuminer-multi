@@ -55,7 +55,6 @@
     <ClCompile Include="asm\aesb-x86.SS">
       <Filter>arch\x86</Filter>
     </ClCompile>
-    <ClCompile Include="api.c" />
     <ClCompile Include="sysinfos.c" />
     <ClCompile Include="compat\jansson\error.c">
       <Filter>jansson</Filter>
