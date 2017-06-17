@@ -80,6 +80,14 @@ enum {
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
 #endif
 
+static inline bool is_windows(void) {
+#ifdef WIN32
+	return 1;
+#else
+	return 0;
+#endif
+}
+
 #if ((__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 3))
 #define WANT_BUILTIN_BSWAP
 #else
@@ -199,12 +207,14 @@ int scanhash_bmw(int thr_id, struct work *work, uint32_t max_nonce, uint64_t *ha
 int scanhash_cryptolight(int thr_id, struct work *work, uint32_t max_nonce, uint64_t *hashes_done);
 int scanhash_cryptonight(int thr_id, struct work *work, uint32_t max_nonce, uint64_t *hashes_done);
 int scanhash_c11(int thr_id, struct work *work, uint32_t max_nonce, uint64_t *hashes_done);
+int scanhash_decred(int thr_id, struct work *work, uint32_t max_nonce, uint64_t *hashes_done);
 int scanhash_drop(int thr_id, struct work *work, uint32_t max_nonce, uint64_t *hashes_done);
 int scanhash_fresh(int thr_id, struct work *work, uint32_t max_nonce, uint64_t *hashes_done);
 int scanhash_groestl(int thr_id, struct work *work, uint32_t max_nonce, uint64_t *hashes_done);
 int scanhash_heavy(int thr_id, struct work *work, uint32_t max_nonce, uint64_t *hashes_done);
 int scanhash_ink(int thr_id, struct work *work, uint32_t max_nonce, uint64_t *hashes_done);
 int scanhash_keccak(int thr_id, struct work *work, uint32_t max_nonce, uint64_t *hashes_done);
+int scanhash_lbry(int thr_id, struct work *work, uint32_t max_nonce, uint64_t *hashes_done);
 int scanhash_luffa(int thr_id, struct work *work, uint32_t max_nonce, uint64_t *hashes_done);
 int scanhash_lyra2(int thr_id, struct work *work, uint32_t max_nonce, uint64_t *hashes_done);
 int scanhash_lyra2rev2(int thr_id, struct work *work, uint32_t max_nonce, uint64_t *hashes_done);
@@ -222,14 +232,20 @@ unsigned char *scrypt_buffer_alloc(int N);
 int scanhash_scrypt(int thr_id, struct work *work, uint32_t max_nonce, uint64_t *hashes_done,
 					unsigned char *scratchbuf, uint32_t N);
 int scanhash_scryptjane(int Nfactor, int thr_id, struct work *work, uint32_t max_nonce, uint64_t *hashes_done);
+int scanhash_sia(int thr_id, struct work *work, uint32_t max_nonce, uint64_t *hashes_done);
 int scanhash_sib(int thr_id, struct work *work, uint32_t max_nonce, uint64_t *hashes_done);
 int scanhash_skein(int thr_id, struct work *work, uint32_t max_nonce, uint64_t *hashes_done);
 int scanhash_skein2(int thr_id, struct work *work, uint32_t max_nonce, uint64_t *hashes_done);
 int scanhash_s3(int thr_id, struct work *work, uint32_t max_nonce, uint64_t *hashes_done);
+int scanhash_timetravel(int thr_id, struct work *work, uint32_t max_nonce, uint64_t *hashes_done);
+int scanhash_veltor(int thr_id, struct work *work, uint32_t max_nonce, uint64_t *hashes_done);
+int scanhash_x11evo(int thr_id, struct work *work, uint32_t max_nonce, uint64_t *hashes_done);
 int scanhash_x11(int thr_id, struct work *work, uint32_t max_nonce, uint64_t *hashes_done);
 int scanhash_x13(int thr_id, struct work *work, uint32_t max_nonce, uint64_t *hashes_done);
 int scanhash_x14(int thr_id, struct work *work, uint32_t max_nonce, uint64_t *hashes_done);
 int scanhash_x15(int thr_id, struct work *work, uint32_t max_nonce, uint64_t *hashes_done);
+int scanhash_x17(int thr_id, struct work *work, uint32_t max_nonce, uint64_t *hashes_done);
+int scanhash_xevan(int thr_id, struct work *work, uint32_t max_nonce, uint64_t *hashes_done);
 int scanhash_yescrypt(int thr_id, struct work *work, uint32_t max_nonce, uint64_t *hashes_done);
 int scanhash_zr5(int thr_id, struct work *work, uint32_t max_nonce, uint64_t *hashes_done);
 
@@ -273,6 +289,7 @@ extern bool opt_protocol;
 extern bool opt_showdiff;
 extern bool opt_quiet;
 extern bool opt_redirect;
+extern int opt_priority;
 extern int opt_timeout;
 extern bool want_longpoll;
 extern bool have_longpoll;
@@ -280,6 +297,7 @@ extern bool have_gbt;
 extern bool allow_getwork;
 extern bool want_stratum;
 extern bool have_stratum;
+extern bool opt_stratum_stats;
 extern char *opt_cert;
 extern char *opt_proxy;
 extern long opt_proxy_type;
@@ -291,6 +309,7 @@ extern int longpoll_thr_id;
 extern int stratum_thr_id;
 extern int api_thr_id;
 extern int opt_n_threads;
+extern int num_cpus;
 extern struct work_restart *work_restart;
 extern uint32_t opt_work_size;
 extern double *thr_hashrates;
@@ -356,16 +375,19 @@ void work_set_target_ratio(struct work* work, uint32_t* hash);
 
 void get_currentalgo(char* buf, int sz);
 bool has_aes_ni(void);
-void bestcpu_feature(char *outbuf, int maxsz);
+void cpu_bestfeature(char *outbuf, size_t maxsz);
+void cpu_getname(char *outbuf, size_t maxsz);
+void cpu_getmodelid(char *outbuf, size_t maxsz);
 float cpu_temp(int core);
 
 struct work {
-	uint32_t data[32];
+	uint32_t data[48];
 	uint32_t target[8];
 
 	double targetdiff;
 	double shareratio;
 	double sharediff;
+	uint32_t resnonce;
 
 	int height;
 	char *txs;
@@ -387,6 +409,7 @@ struct stratum_job {
 	unsigned char version[4];
 	unsigned char nbits[4];
 	unsigned char ntime[4];
+	unsigned char claim[32]; // lbry
 	bool clean;
 	double diff;
 };
@@ -454,8 +477,10 @@ void parse_arg(int key, char *arg);
 void parse_config(json_t *config, char *ref);
 void proper_exit(int reason);
 
-void applog_data(void *pdata);
+void applog_compare_hash(void *hash, void *hash_ref);
+void applog_hex(void *data, int len);
 void applog_hash(void *hash);
+void applog_hash64(void *hash);
 void format_hashrate(double hashrate, char *output);
 void print_hash_tests(void);
 
@@ -465,10 +490,12 @@ void bastionhash(void *output, const void *input);
 void blakehash(void *state, const void *input);
 void blakecoinhash(void *state, const void *input);
 void blake2s_hash(void *output, const void *input);
+void blake2b_hash(void *output, const void *input);
 void bmwhash(void *output, const void *input);
 void c11hash(void *output, const void *input);
 void cryptolight_hash(void* output, const void* input, int len);
 void cryptonight_hash(void* output, const void* input, int len);
+void decred_hash(void *output, const void *input);
 void droplp_hash(void *output, const void *input);
 void groestlhash(void *output, const void *input);
 void heavyhash(unsigned char* output, const unsigned char* input, int len);
@@ -476,6 +503,7 @@ void quarkhash(void *state, const void *input);
 void freshhash(void* output, const void* input, uint32_t len);
 void keccakhash(void *state, const void *input);
 void inkhash(void *state, const void *input); /* shavite */
+void lbry_hash(void *output, const void *input);
 void luffahash(void *output, const void *input);
 void lyra2_hash(void *state, const void *input);
 void lyra2rev2_hash(void *state, const void *input);
@@ -491,10 +519,15 @@ void sibhash(void *output, const void *input);
 void skeinhash(void *state, const void *input);
 void skein2hash(void *state, const void *input);
 void s3hash(void *output, const void *input);
+void timetravel_hash(void *output, const void *input);
+void veltor_hash(void *output, const void *input);
+void xevan_hash(void *output, const void *input);
+void x11evo_hash(void *output, const void *input);
 void x11hash(void *output, const void *input);
 void x13hash(void *output, const void *input);
 void x14hash(void *output, const void *input);
 void x15hash(void *output, const void *input);
+void x17hash(void *output, const void *input);
 void zr5hash(void *output, const void *input);
 void yescrypthash(void *output, const void *input);
 void zr5hash_pok(void *output, uint32_t *pdata);
