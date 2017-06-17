@@ -862,7 +862,7 @@ static bool submit_upstream_work(CURL *curl, struct work *work)
 	bool rc = false;
 
 	/* pass if the previous hash is not the current previous hash */
-	if (opt_algo != ALGO_SIA && !submit_old && memcmp(&work->data[1], &g_work.data[1], 32)) {
+	if (!submit_old && memcmp(&work->data[1], &g_work.data[1], 32)) {
 		if (opt_debug)
 			applog(LOG_DEBUG, "DEBUG: stale work detected, discarding");
 		return true;
@@ -1667,7 +1667,7 @@ static void *miner_thread(void *userdata)
 		// prevent scans before a job is received
 		// beware, some testnet (decred) are using version 0
 		// no version in sia draft protocol
-		if (opt_algo != ALGO_SIA && have_stratum && !work.data[0] && !opt_benchmark) {
+		if (have_stratum && !work.data[0] && !opt_benchmark) {
 			sleep(1);
 			continue;
 		}
