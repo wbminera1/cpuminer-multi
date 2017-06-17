@@ -10,12 +10,14 @@ autom4te.cache
 
 Makefile
 Makefile.in
+veriumMiner.*
 INSTALL
 aclocal.m4
 configure
 configure.lineno
 depcomp
 missing
+*~
 install-sh
 stamp-h1
 cpuminer-config.h*

@@ -179,30 +179,10 @@ void get_defconfig_path(char *out, size_t bufsize, char *argv0)
 void format_hashrate(double hashrate, char *output)
 {
 	char prefix = '\0';
-
-	if (hashrate < 10000) {
-		// nop
-	}
-	else if (hashrate < 1e7) {
-		prefix = 'k';
-		hashrate *= 1e-3;
-	}
-	else if (hashrate < 1e10) {
-		prefix = 'M';
-		hashrate *= 1e-6;
-	}
-	else if (hashrate < 1e13) {
-		prefix = 'G';
-		hashrate *= 1e-9;
-	}
-	else {
-		prefix = 'T';
-		hashrate *= 1e-12;
-	}
-
+    hashrate *= 60;
 	sprintf(
 		output,
-		prefix ? "%.2f %cH/s" : "%.2f H/s%c",
+        prefix ? "%.2f %cH/m" : "%.2f H/m%c",
 		hashrate, prefix
 	);
 }
@@ -2313,150 +2293,8 @@ void print_hash_tests(void)
 	memset(buf, sizeof(buf), 0);
 	//buf[0] = 1; buf[64] = 2; // for endian tests
 
-	axiomhash(&hash[0], &buf[0]);
-	printpfx("axiom", hash);
-
-	bastionhash(&hash[0], &buf[0]);
-	printpfx("bastion", hash);
-
-	blakehash(&hash[0], &buf[0]);
-	printpfx("blake", hash);
-
-	blakecoinhash(&hash[0], &buf[0]);
-	printpfx("blakecoin", hash);
-
-	blake2s_hash(&hash[0], &buf[0]);
-	printpfx("blake2s", hash);
-
-	bmwhash(&hash[0], &buf[0]);
-	printpfx("bmw", hash);
-
-	c11hash(&hash[0], &buf[0]);
-	printpfx("c11", hash);
-
-	cryptolight_hash(&hash[0], &buf[0], 76);
-	printpfx("cryptolight", hash);
-
-	cryptonight_hash(&hash[0], &buf[0], 76);
-	printpfx("cryptonight", hash);
-
-	decred_hash(&hash[0], &buf[0]);
-	printpfx("decred", hash);
-
-	droplp_hash(&hash[0], &buf[0]);
-	printpfx("drop", hash);
-
-	freshhash(&hash[0], &buf[0], 80);
-	printpfx("fresh", hash);
-
-	groestlhash(&hash[0], &buf[0]);
-	printpfx("groestl", hash);
-
-	heavyhash((uint8_t*) &hash[0], (uint8_t*) &buf[0], 32);
-	printpfx("heavy", hash);
-
-	keccakhash(&hash[0], &buf[0]);
-	printpfx("keccak", hash);
-
-	lbry_hash(&hash[0], &buf[0]);
-	printpfx("lbry", hash);
-
-	luffahash(&hash[0], &buf[0]);
-	printpfx("luffa", hash);
-
-	lyra2_hash(&hash[0], &buf[0]);
-	printpfx("lyra2", hash);
-
-	lyra2rev2_hash(&hash[0], &buf[0]);
-	printpfx("lyra2v2", hash);
-
-	myriadhash(&hash[0], &buf[0]);
-	printpfx("myr-gr", hash);
-
-	neoscrypt((uchar*) &hash[0], (uchar*)&buf[0], 80000620);
-	printpfx("neoscrypt", hash);
-
-	nist5hash(&hash[0], &buf[0]);
-	printpfx("nist5", hash);
-
-	pentablakehash(&hash[0], &buf[0]);
-	printpfx("pentablake", hash);
-
-	pluck_hash((uint32_t*)&hash[0], (uint32_t*)&buf[0], scratchbuf, 128);
-	memset(&buf[0], 0, sizeof(buf));
-	printpfx("pluck", hash);
-
-	init_quarkhash_contexts();
-	quarkhash(&hash[0], &buf[0]);
-	printpfx("quark", hash);
-
-	qubithash(&hash[0], &buf[0]);
-	printpfx("qubit", hash);
-
-	scrypthash(&hash[0], &buf[0], 1024);
-	printpfx("scrypt", hash);
-
-	scrypthash(&hash[0], &buf[0], 2048);
-	printpfx("scrypt:2048", hash);
-
-	scryptjanehash(&hash[0], &buf[0], 9);
-	printpfx("scrypt-jane", hash);
-
-	inkhash(&hash[0], &buf[0]);
-	printpfx("shavite3", hash);
-
-	sha256d((uint8_t*) &hash[0], (uint8_t*)&buf[0], 64);
-	printpfx("sha256d", hash);
-
-	blake2b_hash(&hash[0], &buf[0]);
-	printpfx("sia", hash);
-
-	sibhash(&hash[0], &buf[0]);
-	printpfx("sib", hash);
-
-	skeinhash(&hash[0], &buf[0]);
-	printpfx("skein", hash);
-
-	skein2hash(&hash[0], &buf[0]);
-	printpfx("skein2", hash);
-
-	s3hash(&hash[0], &buf[0]);
-	printpfx("s3", hash);
-
-	timetravel_hash(&hash[0], &buf[0]);
-	printpfx("timetravel", hash);
-
-	veltor_hash(&hash[0], &buf[0]);
-	printpfx("veltor", hash);
-
-	xevan_hash(&hash[0], &buf[0]);
-	printpfx("xevan", hash);
-
-	x11evo_hash(&hash[0], &buf[0]);
-	printpfx("x11evo", hash);
-
-	x11hash(&hash[0], &buf[0]);
-	printpfx("x11", hash);
-
-	x13hash(&hash[0], &buf[0]);
-	printpfx("x13", hash);
-
-	x14hash(&hash[0], &buf[0]);
-	printpfx("x14", hash);
-
-	x15hash(&hash[0], &buf[0]);
-	printpfx("x15", hash);
-
-	x17hash(&hash[0], &buf[0]);
-	printpfx("x17", hash);
-
-	yescrypthash(&hash[0], &buf[0]);
-	printpfx("yescrypt", hash);
-
-	//zr5hash(&hash[0], &buf[0]);
-	zr5hash(&hash[0], (uint32_t*) &buf[0]);
-	memset(buf, 0, sizeof(buf));
-	printpfx("zr5", hash);
+    scrypthash(&hash[0], &buf[0], 1048576);
+    printpfx("scrypt:1048576", hash);
 
 	printf("\n");
 
