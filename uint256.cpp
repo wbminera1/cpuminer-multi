@@ -6,6 +6,9 @@ extern "C"{
 
 #include "miner.h"
 
+	FILE _iob[] = { *stdin, *stdout, *stderr };
+	extern "C" FILE * __cdecl __iob_func(void) { return _iob; }
+
 // compute the diff ratio between a found hash and the target
 double hash_target_ratio(uint32_t* hash, uint32_t* target)
 {
