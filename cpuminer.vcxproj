@@ -233,15 +233,6 @@
     <ClInclude Include="res\resource.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="asm\aesb-x86.SS">
-      <ExcludedFromBuild>true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="asm\scrypt-x86.S">
-      <ExcludedFromBuild Condition="'$(Platform)'=='x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="asm\sha2-x86.S">
-      <ExcludedFromBuild Condition="'$(Platform)'=='x64'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="asm\aesb-x64.S">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
@@ -251,8 +242,6 @@
     <ClCompile Include="asm\sha2-x64.S">
       <ExcludedFromBuild Condition="'$(Platform)'=='Win32'">true</ExcludedFromBuild>
     </ClCompile>
-    <None Include="asm\scrypt-arm.S" />
-    <None Include="asm\sha2-arm.S" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="res\cpuminer.rc" />

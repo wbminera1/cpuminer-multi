@@ -31,23 +31,14 @@
     <ClCompile Include="compat\jansson\value.c">
       <Filter>jansson</Filter>
     </ClCompile>
-    <ClCompile Include="asm\scrypt-x86.S">
-      <Filter>arch\x86</Filter>
-    </ClCompile>
     <ClCompile Include="asm\scrypt-x64.S">
       <Filter>arch\x64</Filter>
-    </ClCompile>
-    <ClCompile Include="asm\sha2-x86.S">
-      <Filter>arch\x86</Filter>
     </ClCompile>
     <ClCompile Include="asm\sha2-x64.S">
       <Filter>arch\x64</Filter>
     </ClCompile>
     <ClCompile Include="asm\aesb-x64.S">
       <Filter>arch\x64</Filter>
-    </ClCompile>
-    <ClCompile Include="asm\aesb-x86.SS">
-      <Filter>arch\x86</Filter>
     </ClCompile>
     <ClCompile Include="sysinfos.c" />
     <ClCompile Include="compat\jansson\error.c">
@@ -126,14 +117,8 @@
     <Filter Include="arch">
       <UniqueIdentifier>{04c96afe-01af-4f5c-9ee7-219481033018}</UniqueIdentifier>
     </Filter>
-    <Filter Include="arch\x86">
-      <UniqueIdentifier>{774a7c76-80c0-4a15-983a-022d17e08420}</UniqueIdentifier>
-    </Filter>
     <Filter Include="arch\x64">
       <UniqueIdentifier>{e2f9ccb4-db0b-4e4f-9cfd-935e8e0ebb78}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="arch\arm">
-      <UniqueIdentifier>{5a05483f-0f3f-43fe-bfd1-a14519e30e4d}</UniqueIdentifier>
     </Filter>
     <Filter Include="algo">
       <UniqueIdentifier>{34f266e4-b48f-4721-ac34-474b65726498}</UniqueIdentifier>
@@ -141,14 +126,6 @@
     <Filter Include="res">
       <UniqueIdentifier>{5969f6d8-98c0-49c9-8e4c-51c54b5f0e16}</UniqueIdentifier>
     </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="asm\scrypt-arm.S">
-      <Filter>algo</Filter>
-    </None>
-    <None Include="asm\sha2-arm.S">
-      <Filter>algo</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\cpuminer.ico">
