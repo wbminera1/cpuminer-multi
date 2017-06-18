@@ -2579,7 +2579,7 @@ static void show_credits()
 }
 
 void get_defconfig_path(char *out, size_t bufsize, char *argv0);
-
+#ifndef TEST_ONLY
 int main(int argc, char *argv[]) {
 	struct thr_info *thr;
 	long flags;
@@ -2806,3 +2806,4 @@ int main(int argc, char *argv[]) {
 
 	return 0;
 }
+#endif

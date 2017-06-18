@@ -59,6 +59,7 @@
     <ClCompile Include="algo\sha2.c">
       <Filter>algo</Filter>
     </ClCompile>
+    <ClCompile Include="test.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="compat.h">
