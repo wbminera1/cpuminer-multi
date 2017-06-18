@@ -31,12 +31,6 @@
     <ClCompile Include="compat\jansson\value.c">
       <Filter>jansson</Filter>
     </ClCompile>
-    <ClCompile Include="crypto\aesb.c">
-      <Filter>crypto</Filter>
-    </ClCompile>
-    <ClCompile Include="crypto\oaes_lib.c">
-      <Filter>crypto</Filter>
-    </ClCompile>
     <ClCompile Include="asm\scrypt-x86.S">
       <Filter>arch\x86</Filter>
     </ClCompile>
@@ -115,12 +109,6 @@
     <ClInclude Include="compat\jansson\config.h">
       <Filter>jansson</Filter>
     </ClInclude>
-    <ClInclude Include="crypto\oaes_lib.h">
-      <Filter>crypto</Filter>
-    </ClInclude>
-    <ClInclude Include="crypto\int-util.h">
-      <Filter>crypto</Filter>
-    </ClInclude>
     <ClInclude Include="res\resource.h">
       <Filter>res</Filter>
     </ClInclude>
@@ -134,9 +122,6 @@
     </Filter>
     <Filter Include="jansson">
       <UniqueIdentifier>{88b3057f-0bb6-49d4-98a4-551c8bd8ce0d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="crypto">
-      <UniqueIdentifier>{d17f8918-3371-4acb-ba63-06be828562a1}</UniqueIdentifier>
     </Filter>
     <Filter Include="arch">
       <UniqueIdentifier>{04c96afe-01af-4f5c-9ee7-219481033018}</UniqueIdentifier>
