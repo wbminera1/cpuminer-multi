@@ -46,6 +46,15 @@ static const uint32_t finalblk[16] = {
 	0x00000001, 0x80000000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x00000620
 };
 
+struct ScryptData
+{
+    uint32_t data[20];
+    uint32_t hash[8];
+    uint32_t midstate[8];
+    uint32_t N;
+    unsigned char *scratchbuf;
+};
+
 static inline void HMAC_SHA256_80_init(const uint32_t *key,
 	uint32_t *tstate, uint32_t *ostate)
 {
@@ -119,7 +128,7 @@ static inline void PBKDF2_SHA256_128_32(uint32_t *tstate, uint32_t *ostate,
 
 
 
-/*static inline */void xor_salsa8(uint32_t B[16], const uint32_t Bx[16])
+void xor_salsa8(uint32_t B[16], const uint32_t Bx[16])
 {
 	uint32_t x00,x01,x02,x03,x04,x05,x06,x07,x08,x09,x10,x11,x12,x13,x14,x15;
 	int i;
@@ -141,7 +150,8 @@ static inline void PBKDF2_SHA256_128_32(uint32_t *tstate, uint32_t *ostate,
 	x14 = (B[14] ^= Bx[14]);
 	x15 = (B[15] ^= Bx[15]);
 	for (i = 0; i < 8; i += 2) {
-#define R(a, b) (((a) << (b)) | ((a) >> (32 - (b))))
+#define R(a, b) (_rotl((a), (b)))
+        
 		/* Operate on columns. */
 		x04 ^= R(x00+x12, 7);	
 		x09 ^= R(x05+x01, 7);
@@ -226,48 +236,47 @@ unsigned char *scrypt_buffer_alloc(int N)
 	return (uchar*) malloc((size_t)N * 128 + 63);
 }
 
-static void scrypt_1024_1_1_256(const uint32_t *input, uint32_t *output,
-	uint32_t *midstate, unsigned char *scratchpad, int N)
+static void scrypt_1024_1_1_256(struct ScryptData* scryptData)
 {
 	uint32_t tstate[8], ostate[8];
 	uint32_t X[32];
 	uint32_t *V;
 	
-	V = (uint32_t *)(((uintptr_t)(scratchpad) + 63) & ~ (uintptr_t)(63));
+	V = (uint32_t *)(((uintptr_t)(scryptData->scratchbuf) + 63) & ~ (uintptr_t)(63));
 
-	memcpy(tstate, midstate, 32);
-	HMAC_SHA256_80_init(input, tstate, ostate);
-	PBKDF2_SHA256_80_128(tstate, ostate, input, X);
+	memcpy(tstate, scryptData->midstate, 32);
+	HMAC_SHA256_80_init(scryptData->data, tstate, ostate);
+	PBKDF2_SHA256_80_128(tstate, ostate, scryptData->data, X);
 
-	scrypt_core(X, V, N);
+	scrypt_core(X, V, scryptData->N);
 
-	PBKDF2_SHA256_128_32(tstate, ostate, X, output);
+	PBKDF2_SHA256_128_32(tstate, ostate, X, scryptData->hash);
 }
 
-extern int scanhash_scrypt(int thr_id, struct work *work, uint32_t max_nonce, uint64_t *hashes_done,
-	unsigned char *scratchbuf, uint32_t N)
+int scanhash_scrypt(int thr_id, struct work *work, uint32_t max_nonce, uint64_t *hashes_done, unsigned char *scratchbuf, uint32_t N)
 {
 	uint32_t *pdata = work->data;
 	uint32_t *ptarget = work->target;
-	uint32_t data[20], hash[8];
-	uint32_t midstate[8];
 	uint32_t n = pdata[19] - 1;
 	const uint32_t Htarg = ptarget[7];
 	
-	memcpy(data, pdata, 80);
+    struct ScryptData scryptData;
+    scryptData.scratchbuf = scratchbuf;
+    scryptData.N = N;
+	memcpy(scryptData.data, pdata, 80);
 	
-	sha256_init(midstate);
-	sha256_transform(midstate, data, 0);
+	sha256_init(scryptData.midstate);
+	sha256_transform(scryptData.midstate, scryptData.data, 0);
 	
 	do {
-		data[19] = ++n;
+        scryptData.data[19] = ++n;
 		
-		scrypt_1024_1_1_256(data, hash, midstate, scratchbuf, N);
+		scrypt_1024_1_1_256(&scryptData);
 		
-		if (unlikely(hash[7] <= Htarg && fulltest(hash, ptarget))) {
-			work_set_target_ratio(work, hash);
+		if (unlikely(scryptData.hash[7] <= Htarg && fulltest(scryptData.hash, ptarget))) {
+			work_set_target_ratio(work, scryptData.hash);
 			*hashes_done = n - pdata[19] + 1;
-			pdata[19] = data[19];
+			pdata[19] = scryptData.data[19];
 			return 1;
 		}
 	} while (likely(n < max_nonce && !work_restart[thr_id].restart));
@@ -277,7 +286,8 @@ extern int scanhash_scrypt(int thr_id, struct work *work, uint32_t max_nonce, ui
 	return 0;
 }
 
-/* simple cpu test (util.c) */
+// simple cpu test (util.c) 
+/*
 void scrypthash(void *output, const void *input, uint32_t N)
 {
 	uint32_t midstate[8];
@@ -294,3 +304,4 @@ void scrypthash(void *output, const void *input, uint32_t N)
 
 	free(scratchbuf);
 }
+*/

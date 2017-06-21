@@ -190,6 +190,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="amd64-xmm6int\salsa20-xmm6int.c" />
     <ClCompile Include="compat\getopt\getopt_long.c" />
     <ClCompile Include="compat\gettimeofday.c" />
     <ClCompile Include="compat\jansson\dump.c" />
@@ -221,6 +222,8 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_Test|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_Test|x64'">false</ExcludedFromBuild>
+      <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">All</AssemblerOutput>
+      <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Release_Test|x64'">All</AssemblerOutput>
     </ClCompile>
     <ClCompile Include="uint256.cpp" />
     <ClCompile Include="util.c">
@@ -232,9 +235,16 @@
     <ClCompile Include="algo\scrypt.c">
       <Optimization Condition="'$(Configuration)'=='Release'">Full</Optimization>
       <Optimization Condition="'$(Configuration)'=='Release_Test'">Full</Optimization>
+      <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Debug_Test|x64'">All</AssemblerOutput>
+      <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">All</AssemblerOutput>
+      <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Release_Test|x64'">All</AssemblerOutput>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="amd64-xmm6int\u1.h" />
+    <ClInclude Include="amd64-xmm6int\u16.h" />
+    <ClInclude Include="amd64-xmm6int\u4.h" />
+    <ClInclude Include="amd64-xmm6int\u8.h" />
     <ClInclude Include="compat\jansson\config.h" />
     <ClInclude Include="compat\jansson\jansson.h" />
     <ClInclude Include="compat.h" />
@@ -262,6 +272,9 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\cpuminer.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="amd64-xmm6int\README.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <!-- Copy the required dlls -->

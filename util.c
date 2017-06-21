@@ -2279,9 +2279,10 @@ void applog_hash64(void *hash)
 
 #define printpfx(n,h) \
 	printf("%s%11s%s: %s\n", CL_CYN, n, CL_N, format_hash(s, (uint8_t*) h))
-
 void print_hash_tests(void)
 {
+    /*
+
 	uchar *scratchbuf = NULL;
 	char hash[128], s[80];
 	char buf[192] = { 0 };
@@ -2299,5 +2300,6 @@ void print_hash_tests(void)
 	printf("\n");
 
 	free(scratchbuf);
-}
+    */
 
+}

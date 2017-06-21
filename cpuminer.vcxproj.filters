@@ -60,6 +60,9 @@
       <Filter>algo</Filter>
     </ClCompile>
     <ClCompile Include="test.c" />
+    <ClCompile Include="amd64-xmm6int\salsa20-xmm6int.c">
+      <Filter>amd64-xmm6int</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="compat.h">
@@ -104,6 +107,18 @@
     <ClInclude Include="res\resource.h">
       <Filter>res</Filter>
     </ClInclude>
+    <ClInclude Include="amd64-xmm6int\u1.h">
+      <Filter>amd64-xmm6int</Filter>
+    </ClInclude>
+    <ClInclude Include="amd64-xmm6int\u4.h">
+      <Filter>amd64-xmm6int</Filter>
+    </ClInclude>
+    <ClInclude Include="amd64-xmm6int\u8.h">
+      <Filter>amd64-xmm6int</Filter>
+    </ClInclude>
+    <ClInclude Include="amd64-xmm6int\u16.h">
+      <Filter>amd64-xmm6int</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="compat">
@@ -127,6 +142,9 @@
     <Filter Include="res">
       <UniqueIdentifier>{5969f6d8-98c0-49c9-8e4c-51c54b5f0e16}</UniqueIdentifier>
     </Filter>
+    <Filter Include="amd64-xmm6int">
+      <UniqueIdentifier>{d08b1ded-64f5-41c2-86cc-4162617edbdd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\cpuminer.ico">
@@ -137,5 +155,10 @@
     <ResourceCompile Include="res\cpuminer.rc">
       <Filter>res</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="amd64-xmm6int\README.txt">
+      <Filter>amd64-xmm6int</Filter>
+    </Text>
   </ItemGroup>
 </Project>
