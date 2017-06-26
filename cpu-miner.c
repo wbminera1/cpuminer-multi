@@ -1588,7 +1588,7 @@ static void *miner_thread(void *userdata)
 	}
 
 	if (opt_algo == ALGO_SCRYPT) {
-		scratchbuf = scrypt_buffer_alloc(opt_scrypt_n);
+		scratchbuf = scrypt_buffer_alloc_sse(opt_scrypt_n);
 		if (!scratchbuf) {
 			applog(LOG_ERR, "scrypt buffer allocation failed");
 			pthread_mutex_lock(&applog_lock);
@@ -1732,7 +1732,7 @@ static void *miner_thread(void *userdata)
 		/* scan nonces for a proof-of-work hash */
 		switch (opt_algo) {
 		case ALGO_SCRYPT:
-			rc = scanhash_scrypt(thr_id, &work, max_nonce, &hashes_done, scratchbuf, opt_scrypt_n);
+			rc = scanhash_scrypt_sse(thr_id, &work, max_nonce, &hashes_done, scratchbuf, opt_scrypt_n);
 			break;
 		default:
 			/* should never happen */

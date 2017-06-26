@@ -63,6 +63,9 @@
     <ClCompile Include="amd64-xmm6int\salsa20-xmm6int.c">
       <Filter>amd64-xmm6int</Filter>
     </ClCompile>
+    <ClCompile Include="algo\scrypt_sse.c">
+      <Filter>algo</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="compat.h">

@@ -128,7 +128,7 @@ static inline void PBKDF2_SHA256_128_32(uint32_t *tstate, uint32_t *ostate,
 
 
 
-void xor_salsa8(uint32_t B[16], const uint32_t Bx[16])
+inline void xor_salsa8(uint32_t B[16], const uint32_t Bx[16])
 {
 	uint32_t x00,x01,x02,x03,x04,x05,x06,x07,x08,x09,x10,x11,x12,x13,x14,x15;
 	int i;
@@ -213,7 +213,7 @@ void xor_salsa8(uint32_t B[16], const uint32_t Bx[16])
 	B[15] += x15;
 }
 
-/*static inline */void scrypt_core(uint32_t *X, uint32_t *V, int N)
+static inline void scrypt_core(uint32_t *X, uint32_t *V, int N)
 {
 	int i;
 
@@ -277,6 +277,26 @@ int scanhash_scrypt(int thr_id, struct work *work, uint32_t max_nonce, uint64_t 
 			work_set_target_ratio(work, scryptData.hash);
 			*hashes_done = n - pdata[19] + 1;
 			pdata[19] = scryptData.data[19];
+/*
+            printf("Data:\n");
+            for (size_t i = 0; i < sizeof(work->data) / sizeof(work->data[0]); ++i)
+            {
+                printf("0x%08x,", work->data[i]);
+            }
+            printf("\n");
+            printf("Target:\n");
+            for (size_t i = 0; i < sizeof(work->target) / sizeof(work->target[0]); ++i)
+            {
+                printf("0x%08x,", work->target[i]);
+            }
+            printf("\n");
+            printf("Hash:\n");
+            for (size_t i = 0; i < sizeof(scryptData.hash) / sizeof(scryptData.hash[0]); ++i)
+            {
+                printf("0x%08x,", scryptData.hash[i]);
+            }
+            printf("\n");
+*/
 			return 1;
 		}
 	} while (likely(n < max_nonce && !work_restart[thr_id].restart));

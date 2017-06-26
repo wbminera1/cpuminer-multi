@@ -6,6 +6,8 @@
 #include <immintrin.h>
 #include <inttypes.h>
 
+#include "miner.h"
+
 #define R(a, b) (((a) << (b)) | ((a) >> (32 - (b))))
 
 struct WorkData
@@ -150,7 +152,7 @@ int test_rotation()
     }
 }
 
-int salsa_idx[32][4] = {
+static int salsa_idx[32][4] = {
     { 4, 0, 12, 7 },{ 9, 5, 1, 7 },{ 14, 10, 6, 7 },{ 3, 15, 11, 7 },
     { 8, 4, 0, 9 },{ 13, 9, 5, 9 },{ 2, 14, 10, 9 },{ 7, 3, 15, 9 },
     { 12, 8, 4, 13 },{ 1, 13, 9, 13 },{ 6, 2, 14, 13 },{ 11, 7, 3, 13 },
@@ -236,6 +238,49 @@ void xor_salsa8_way4_SSE(struct WorkSet* ws)
     }
 }
 
+#pragma intrinsic(__rdtsc)
+
+int scanhash_scrypt(int thr_id, struct work *work, uint32_t max_nonce, uint64_t *hashes_done, unsigned char *scratchbuf, uint32_t N);
+
+int scanhash_scrypt_sse(int thr_id, struct work *work, uint32_t max_nonce, uint64_t *hashes_done, unsigned char *scratchbuf, uint32_t nn);
+unsigned char *scrypt_buffer_alloc_sse(int nn);
+
+void test_scanhash_scrypt()
+{
+    struct work scryptWork;
+    uint32_t data[48] = { 0x06000000, 0x3ee4047a, 0x59863d03, 0x841dde00,
+        0x335add65, 0x4854661a, 0x53c83f47, 0x20e5a23d,
+        0x35dff734, 0xc6766d52, 0x1ff7508f, 0xdfc9cdcb,
+        0x86139a08, 0x743c7ebe, 0x4a942414, 0xdc865136,
+        0x70d9b711, 0x073d4e59, 0xff01011e, 0x80000006,
+        0x80000000, 0x00000000, 0x00000000, 0x00000000,
+        0x00000000, 0x00000000, 0x00000000, 0x00000000,
+        0x00000000, 0x00000000, 0x00000000, 0x00000280,
+        0x00000000, 0x00000000, 0x00000000, 0x00000000,
+        0x00000000, 0x00000000, 0x00000000, 0x00000000,
+        0x00000000, 0x00000000, 0x00000000, 0x00000000,
+        0x00000000, 0x00000000, 0x00000000, 0x00000000 };
+    uint32_t target[8] = { 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+        0x00000000, 0x00000000, 0x00000000, 0x00215534 };
+    uint32_t hash[8] = { 0x1ddefac6, 0x37418d4c, 0xc4b82561, 0x2832c9c3,
+        0xde93664e, 0x84d703e0, 0xc9501531, 0x0002720b };
+    const int N = 1024 * 1024;
+    unsigned char * scratchBuff = scrypt_buffer_alloc_sse(N);
+    for (int i = 0; i < 4; ++i)
+    {
+        memset(&scryptWork, 0, sizeof(scryptWork));
+        memcpy(scryptWork.data, data, sizeof(scryptWork.data));
+        memcpy(scryptWork.target, target, sizeof(scryptWork.target));
+        uint64_t hashesDone;
+        const long long _Ctr1 = __rdtsc();;
+        int res = scanhash_scrypt_sse(0, &scryptWork, 16, &hashesDone, scratchBuff, N);
+
+        const long long _Ctr2 = __rdtsc();;
+        long long delta = _Ctr2 - _Ctr1;
+        printf("Test res %d, %lld, time %lld\n", res, hashesDone, delta / (1024 * 1024));
+    }
+}
+
 int main(int argc, char *argv[])
 {
 	printf("Test started\n");
@@ -310,7 +355,8 @@ int main(int argc, char *argv[])
     {
         printf("SSE Failed !\n");
     }
+    test_scanhash_scrypt();
+    printf("Test stopped\n");
     _getch();
-	printf("Test stopped\n");
 	return 0;
 }
