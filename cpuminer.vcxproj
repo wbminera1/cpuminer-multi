@@ -232,6 +232,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_Test|x64'">false</ExcludedFromBuild>
       <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">All</AssemblerOutput>
       <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Release_Test|x64'">All</AssemblerOutput>
+      <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Debug_Test|x64'">All</AssemblerOutput>
     </ClCompile>
     <ClCompile Include="uint256.cpp" />
     <ClCompile Include="util.c">
@@ -250,6 +251,8 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="algo\scrypt_sse.h" />
+    <ClInclude Include="algo\sha2_sse.h" />
     <ClInclude Include="amd64-xmm6int\u1.h" />
     <ClInclude Include="amd64-xmm6int\u16.h" />
     <ClInclude Include="amd64-xmm6int\u4.h" />
@@ -268,6 +271,7 @@
     <ClInclude Include="miner.h" />
     <ClInclude Include="uint256.h" />
     <ClInclude Include="res\resource.h" />
+    <ClInclude Include="utils_sse.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="asm\aesb-x64.S">

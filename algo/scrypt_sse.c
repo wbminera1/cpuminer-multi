@@ -26,13 +26,12 @@
  * This file was originally written by Colin Percival as part of the Tarsnap
  * online backup system.
  */
-
-#include "miner.h"
-
 #include <stdlib.h>
 #include <string.h>
-#include <inttypes.h>
 #include <immintrin.h>
+
+#include "miner.h"
+#include "scrypt_sse.h"
 
 static const uint32_t keypad[12] = {
 	0x80000000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x00000280
@@ -47,26 +46,6 @@ static const uint32_t finalblk[16] = {
 	0x00000001, 0x80000000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x00000620
 };
 
-#define N (1024 * 1024)
-
-struct ScryptData
-{
-    uint32_t X[32];
-    uint32_t data[20 + 12];
-    uint32_t hash[8];
-    uint32_t midstate[8];
-    uint32_t tstate[8];
-    uint32_t ostate[8];
-    unsigned char *scratchbuf;
-    uint32_t* V;
-    uint32_t* B;
-    uint32_t *Bx;
-};
-
-struct ScryptDataSet
-{
-    struct ScryptData sd[4];
-};
 
 static inline void HMAC_SHA256_80_init(const uint32_t *key,
 	uint32_t *tstate, uint32_t *ostate)
@@ -146,7 +125,7 @@ static inline void salsa_round(__m128i* xv, const int dst, const int src1, const
 }
 /*
 */
-static inline void xor_salsa8_SSE(struct ScryptDataSet* ws)
+static inline void xor_salsa8_SSE(struct ScryptData* ws)
 {
     __m128i bv[16];
     __m128i bxv[16];
@@ -156,14 +135,14 @@ static inline void xor_salsa8_SSE(struct ScryptDataSet* ws)
     uint32_t* x = (uint32_t*)xv;
     for (int v = 0; v < 16; ++v)
     {
-        b[v * 4 + 0] = ws->sd[0].B[v];
-        b[v * 4 + 1] = ws->sd[1].B[v];
-        b[v * 4 + 2] = ws->sd[2].B[v];
-        b[v * 4 + 3] = ws->sd[3].B[v];
-        bx[v * 4 + 0] = ws->sd[0].Bx[v];
-        bx[v * 4 + 1] = ws->sd[1].Bx[v];
-        bx[v * 4 + 2] = ws->sd[2].Bx[v];
-        bx[v * 4 + 3] = ws->sd[3].Bx[v];
+        b[v * 4 + 0] = ws->B[0][v];
+        b[v * 4 + 1] = ws->B[1][v];
+        b[v * 4 + 2] = ws->B[2][v];
+        b[v * 4 + 3] = ws->B[3][v];
+        bx[v * 4 + 0] = ws->Bx[0][v];
+        bx[v * 4 + 1] = ws->Bx[1][v];
+        bx[v * 4 + 2] = ws->Bx[2][v];
+        bx[v * 4 + 3] = ws->Bx[3][v];
     }
     for (int v = 0; v < 16; ++v)
     {
@@ -209,42 +188,42 @@ static inline void xor_salsa8_SSE(struct ScryptDataSet* ws)
     }
     for (int v = 0; v < 16; ++v)
     {
-        ws->sd[0].B[v] = b[v * 4 + 0];
-        ws->sd[1].B[v] = b[v * 4 + 1];
-        ws->sd[2].B[v] = b[v * 4 + 2];
-        ws->sd[3].B[v] = b[v * 4 + 3];
+        ws->B[0][v] = b[v * 4 + 0];
+        ws->B[1][v] = b[v * 4 + 1];
+        ws->B[2][v] = b[v * 4 + 2];
+        ws->B[3][v] = b[v * 4 + 3];
     }
 }
 
-static inline void scrypt_core_4(struct ScryptDataSet* ws)
+static inline void scrypt_core_4(struct ScryptData* ws)
 {
     for (uint32_t i = 0; i < N; i++) {
         for (size_t idx = 0; idx < 4; ++idx)
         {
-            memcpy(&ws->sd[idx].V[i * 32], ws->sd[idx].X, 128);
-            ws->sd[idx].B = ws->sd[idx].X; ws->sd[idx].Bx = ws->sd[idx].X + 16;
+            memcpy(&ws->V[idx][i * 32], ws->X[idx], 128);
+            ws->B[idx] = ws->X[idx]; ws->Bx[idx] = ws->X[idx] + 16;
         }
         xor_salsa8_SSE(ws);
         for (size_t idx = 0; idx < 4; ++idx)
         {
-            ws->sd[idx].B = ws->sd[idx].X + 16; ws->sd[idx].Bx = ws->sd[idx].X;
+            ws->B[idx] = ws->X[idx] + 16; ws->Bx[idx] = ws->X[idx];
         }
         xor_salsa8_SSE(ws);
     }
     for (uint32_t i = 0; i < N; i++) {
         for (size_t idx = 0; idx < 4; ++idx)
         {
-            uint32_t j = 32 * (ws->sd[idx].X[16] & (N - 1));
+            uint32_t j = 32 * (ws->X[idx][16] & (N - 1));
             for (uint8_t k = 0; k < 32; k++)
             {
-                ws->sd[idx].X[k] ^= ws->sd[idx].V[j + k];
+                ws->X[idx][k] ^= ws->V[idx][j + k];
             }
-            ws->sd[idx].B = ws->sd[idx].X; ws->sd[idx].Bx = ws->sd[idx].X + 16;
+            ws->B[idx] = ws->X[idx]; ws->Bx[idx] = ws->X[idx] + 16;
         }
         xor_salsa8_SSE(ws);
         for (size_t idx = 0; idx < 4; ++idx)
         {
-            ws->sd[idx].B = ws->sd[idx].X + 16; ws->sd[idx].Bx = ws->sd[idx].X;
+            ws->B[idx] = ws->X[idx] + 16; ws->Bx[idx] = ws->X[idx];
         }
         xor_salsa8_SSE(ws);
     }
@@ -257,19 +236,19 @@ unsigned char *scrypt_buffer_alloc_sse(int nn)
 	return ptr;
 }
 
-static void scrypt_1024_1_1_256(struct ScryptDataSet* scryptDataSet)
+static void scrypt_1024_1_1_256(struct ScryptData* scryptData)
 {
     for (size_t i = 0; i < 4; ++i)
     {
-        memcpy(scryptDataSet->sd[i].tstate, scryptDataSet->sd[i].midstate, 32);
-        HMAC_SHA256_80_init(scryptDataSet->sd[i].data, scryptDataSet->sd[i].tstate, scryptDataSet->sd[i].ostate);
-        PBKDF2_SHA256_80_128(scryptDataSet->sd[i].tstate, scryptDataSet->sd[i].ostate, scryptDataSet->sd[i].data, scryptDataSet->sd[i].X);
+        memcpy(scryptData->tstate[i], scryptData->midstate[i], 32);
+        HMAC_SHA256_80_init(scryptData->data[i], scryptData->tstate[i], scryptData->ostate[i]);
+        PBKDF2_SHA256_80_128(scryptData->tstate[i], scryptData->ostate[i], scryptData->data[i], scryptData->X[i]);
     }
 
-    scrypt_core_4(scryptDataSet);
+    scrypt_core_4(scryptData);
     for (size_t i = 0; i < 4; ++i)
     {
-        PBKDF2_SHA256_128_32(scryptDataSet->sd[i].tstate, scryptDataSet->sd[i].ostate, scryptDataSet->sd[i].X, scryptDataSet->sd[i].hash);
+        PBKDF2_SHA256_128_32(scryptData->tstate[i], scryptData->ostate[i], scryptData->X[i], scryptData->hash[i]);
     }
 }
 
@@ -279,31 +258,32 @@ int scanhash_scrypt_sse(int thr_id, struct work *work, uint32_t max_nonce, uint6
 	uint32_t *ptarget = work->target;
 	uint32_t n = pdata[19] - 1;
 	const uint32_t Htarg = ptarget[7];
-    struct ScryptDataSet dataSet;
+    struct ScryptData dataSet;
+
     for (size_t i = 0; i < 4; ++i)
     {
-        dataSet.sd[i].scratchbuf = scratchbuf + i * (size_t)N * 128;
-        dataSet.sd[i].V = (uint32_t *)dataSet.sd[i].scratchbuf;
-        memcpy(dataSet.sd[i].data, pdata, 80);
+        dataSet.scratchbuf[i] = scratchbuf + i * (size_t)N * 128;
+        dataSet.V[i] = (uint32_t *)dataSet.scratchbuf[i];
+        memcpy(dataSet.data[i], pdata, 80);
 
-        sha256_init(dataSet.sd[i].midstate);
-        sha256_transform(dataSet.sd[i].midstate, dataSet.sd[i].data, 0);
+        sha256_init(dataSet.midstate[i]);
+        sha256_transform(dataSet.midstate[i], dataSet.data[i], 0);
     }
 	
 	do {
         for (size_t i = 0; i < 4; ++i)
         {
-            dataSet.sd[i].data[19] = ++n;
+            dataSet.data[i][19] = ++n;
         }
 		
 		scrypt_1024_1_1_256(&dataSet);
 		
         for (size_t i = 0; i < 4; ++i)
         {
-            if (unlikely(dataSet.sd[i].hash[7] <= Htarg && fulltest(dataSet.sd[i].hash, ptarget))) {
-                work_set_target_ratio(work, dataSet.sd[i].hash);
+            if (unlikely(dataSet.hash[i][7] <= Htarg && fulltest(dataSet.hash[i], ptarget))) {
+                work_set_target_ratio(work, dataSet.hash[i]);
                 *hashes_done = n - pdata[19] + 1;
-                pdata[19] = dataSet.sd[i].data[19];
+                pdata[19] = dataSet.data[i][19];
                 printf("Found, idx %u\n", (unsigned int)i);
                 return 1;
             }
@@ -315,22 +295,3 @@ int scanhash_scrypt_sse(int thr_id, struct work *work, uint32_t max_nonce, uint6
 	return 0;
 }
 
-// simple cpu test (util.c) 
-/*
-void scrypthash(void *output, const void *input, uint32_t N)
-{
-	uint32_t midstate[8];
-	char *scratchbuf = scrypt_buffer_alloc(N);
-
-	memset(output, 0, 32);
-	if (!scratchbuf)
-		return;
-
-	sha256_init(midstate);
-	sha256_transform(midstate, input, 0);
-
-	scrypt_1024_1_1_256((uint32_t*)input, (uint32_t*)output, midstate, scratchbuf, N);
-
-	free(scratchbuf);
-}
-*/

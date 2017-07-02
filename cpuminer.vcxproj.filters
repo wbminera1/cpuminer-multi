@@ -122,6 +122,13 @@
     <ClInclude Include="amd64-xmm6int\u16.h">
       <Filter>amd64-xmm6int</Filter>
     </ClInclude>
+    <ClInclude Include="algo\scrypt_sse.h">
+      <Filter>algo</Filter>
+    </ClInclude>
+    <ClInclude Include="utils_sse.h" />
+    <ClInclude Include="algo\sha2_sse.h">
+      <Filter>algo</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="compat">
