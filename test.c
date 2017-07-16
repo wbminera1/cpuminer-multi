@@ -61,9 +61,8 @@ int test_rotation()
 }
 #undef R
 
-/*static inline */void xor_salsa8_t(uint32_t B[16], const uint32_t Bx[16])
+void xor_salsa8_t(uint32_t B[16], const uint32_t Bx[16])
 {
-    //uint32_t x00, x01, x02, x03, x04, x05, x06, x07, x08, x09, x10, x11, x12, x13, x14, x15;
     uint32_t x[16];
     __m128i* sX = (__m128i*)x;
     __m128i* sB = (__m128i*)B;
@@ -73,25 +72,6 @@ int test_rotation()
     sB[2] = _mm_xor_si128(sB[2], sBx[2]);
     sB[3] = _mm_xor_si128(sB[3], sBx[3]);
     memcpy(sX, sB, sizeof(uint32_t) * 16);
-
-    /*
-    x[ 0] = (B[0] ^= Bx[0]);
-    x[ 1] = (B[1] ^= Bx[1]);
-    x[ 2] = (B[2] ^= Bx[2]);
-    x[ 3] = (B[3] ^= Bx[3]);
-    x[ 4] = (B[4] ^= Bx[4]);
-    x[ 5] = (B[5] ^= Bx[5]);
-    x[ 6] = (B[6] ^= Bx[6]);
-    x[ 7] = (B[7] ^= Bx[7]);
-    x[ 8] = (B[8] ^= Bx[8]);
-    x[ 9] = (B[9] ^= Bx[9]);
-    x[10] = (B[10] ^= Bx[10]);
-    x[11] = (B[11] ^= Bx[11]);
-    x[12] = (B[12] ^= Bx[12]);
-    x[13] = (B[13] ^= Bx[13]);
-    x[14] = (B[14] ^= Bx[14]);
-    x[15] = (B[15] ^= Bx[15]);
-*/
 
     for (int i = 0; i < 8; i += 2) {
         // Operate on columns.
@@ -157,12 +137,12 @@ static int salsa_idx[32][4] = {
     { 0,3,2, 18 },{ 5,4,7, 18 },{ 10,9,8, 18 },{ 15,14,13, 18 }
 };
 
-void xor_salsa8_sd(struct ScryptData* sd)
+void xor_salsa8_sd(uint32_t* x1, const uint32_t* x2)
 {
     uint32_t x[16];
     for (int i = 0; i < 16; ++i)
     {
-        x[i] = (sd->X[0][i] ^= sd->X[0][i + 16]);
+        x[i] = (x1[i] ^= x2[i]);
     }
     
 
@@ -174,19 +154,19 @@ void xor_salsa8_sd(struct ScryptData* sd)
     }
     for (int i = 0; i < 16; ++i)
     {
-        sd->X[0][i] += x[i];
+        x1[i] += x[i];
     }
 }
-/*
-void xor_salsa8_way4_ref(struct ScryptDataSet* sds)
+
+void xor_salsa8_way4_ref(struct ScryptData* sds)
 {
-    xor_salsa8_sd(sds->sd + 0);
-    xor_salsa8_sd(sds->sd + 1);
-    xor_salsa8_sd(sds->sd + 2);
-    xor_salsa8_sd(sds->sd + 3);
+    xor_salsa8_sd(&sds->X[0][0], &sds->X[0][16]);
+    xor_salsa8_sd(&sds->X[1][0], &sds->X[1][16]);
+    xor_salsa8_sd(&sds->X[2][0], &sds->X[2][16]);
+    xor_salsa8_sd(&sds->X[3][0], &sds->X[3][16]);
 }
 
-void xor_salsa8_way4_SSE(struct ScryptDataSet* sds)
+void xor_salsa8_way4_SSE(struct ScryptData* sds)
 {
     __m128i bv[16];
     __m128i bxv[16];
@@ -196,14 +176,14 @@ void xor_salsa8_way4_SSE(struct ScryptDataSet* sds)
     uint32_t* x = (uint32_t*)xv;
     for (int v = 0; v < 16; ++v)
     {
-        b[v * 4 + 0] = sds->sd[0].X[v];
-        b[v * 4 + 1] = sds->sd[1].X[v];
-        b[v * 4 + 2] = sds->sd[2].X[v];
-        b[v * 4 + 3] = sds->sd[3].X[v];
-        bx[v * 4 + 0] = sds->sd[0].X[v + 16];
-        bx[v * 4 + 1] = sds->sd[1].X[v + 16];
-        bx[v * 4 + 2] = sds->sd[2].X[v + 16];
-        bx[v * 4 + 3] = sds->sd[3].X[v + 16];
+        b[v * 4 + 0] = sds->X[0][v];
+        b[v * 4 + 1] = sds->X[1][v];
+        b[v * 4 + 2] = sds->X[2][v];
+        b[v * 4 + 3] = sds->X[3][v];
+        bx[v * 4 + 0] = sds->X[0][v + 16];
+        bx[v * 4 + 1] = sds->X[1][v + 16];
+        bx[v * 4 + 2] = sds->X[2][v + 16];
+        bx[v * 4 + 3] = sds->X[3][v + 16];
     }
     for (int v = 0; v < 16; ++v)
     {
@@ -225,13 +205,13 @@ void xor_salsa8_way4_SSE(struct ScryptDataSet* sds)
     }
     for (int v = 0; v < 16; ++v)
     {
-        sds->sd[0].X[v] = b[v * 4 + 0];
-        sds->sd[1].X[v] = b[v * 4 + 1];
-        sds->sd[2].X[v] = b[v * 4 + 2];
-        sds->sd[3].X[v] = b[v * 4 + 3];
+        sds->X[0][v] = b[v * 4 + 0];
+        sds->X[1][v] = b[v * 4 + 1];
+        sds->X[2][v] = b[v * 4 + 2];
+        sds->X[3][v] = b[v * 4 + 3];
     }
 }
-*/
+
 #pragma intrinsic(__rdtsc)
 
 int scanhash_scrypt(int thr_id, struct work *work, uint32_t max_nonce, uint64_t *hashes_done, unsigned char *scratchbuf, uint32_t nn);
@@ -385,7 +365,7 @@ void test_sha256()
 
 }
 
-int main(int argc, char *argv[])
+int _main(int argc, char *argv[])
 {
 	printf("Test started\n");
 
@@ -396,12 +376,14 @@ int main(int argc, char *argv[])
     const uint32_t B[16]  = { 0x6f54c89d, 0x5715059b, 0xc2a5624d, 0x0dc7b677, 0x87b2f312, 0xf62cf550, 0x53b282fd, 0xc8ff34d6, 0x1fc77a23, 0x814ecddc, 0x10642477, 0x1c181f5c, 0xdddabca8, 0x3bce9427, 0x32524048, 0xce512434 };
     const uint32_t Bx[16] = { 0x37b0a819, 0xf1deff63, 0x2f04fc79, 0x36997495, 0x26018ae6, 0x8ba55257, 0x595c23d2, 0x880d99c6, 0x9dfff6ce, 0x3504752c, 0x3df27f4d, 0x597aa991, 0xe20a335e, 0x04bae0d1, 0xdda7c4f8, 0x6ae01c71 };
 
-    uint32_t t1_B[16], t2_B[16];
-    uint32_t t1_Bx[16], t2_Bx[16];
+    uint32_t t1_B[16], t2_B[16], t3_B[16];
+    uint32_t t1_Bx[16], t2_Bx[16], t3_Bx[16];
     memcpy(t1_B, B, sizeof(B));
     memcpy(t2_B, B, sizeof(B));
+    memcpy(t3_B, B, sizeof(B));
     memcpy(t1_Bx, Bx, sizeof(Bx));
     memcpy(t2_Bx, Bx, sizeof(Bx));
+    memcpy(t3_Bx, Bx, sizeof(Bx));
 
     for (int wd = 0; wd < 16; ++wd) {
         printf("0x%04x,", B[wd]);
@@ -419,13 +401,10 @@ int main(int argc, char *argv[])
     else {
         printf("Transpose test Failed !\n");
     }
-/*
-    struct ScryptData sd;
-    memcpy(sd.X + 0, B, sizeof(B));
-    memcpy(sd.X + 16, Bx, sizeof(Bx));
-    xor_salsa8_sd(&sd);
 
-    if (0 == memcmp(t1_B, sd.X, sizeof(t1_B)))
+    xor_salsa8_sd(t3_B, t3_Bx);
+
+    if (0 == memcmp(t1_B, t3_B, sizeof(t1_B)))
     {
         printf("ScryptData test Ok !\n");
     }
@@ -433,22 +412,22 @@ int main(int argc, char *argv[])
         printf("ScryptData test Failed !\n");
     }
 
-    struct ScryptDataSet sds1;
-    struct ScryptDataSet sds2;
+    struct ScryptData sds1;
+    struct ScryptData sds2;
 
-    memcpy(sds1.sd[0].X, B, sizeof(B)); memcpy(sds1.sd[0].X + 16, Bx, sizeof(Bx));
-    memcpy(sds1.sd[1].X, B, sizeof(B)); memcpy(sds1.sd[1].X + 16, Bx, sizeof(Bx));
-    memcpy(sds1.sd[2].X, B, sizeof(B)); memcpy(sds1.sd[2].X + 16, Bx, sizeof(Bx));
-    memcpy(sds1.sd[3].X, B, sizeof(B)); memcpy(sds1.sd[3].X + 16, Bx, sizeof(Bx));
+    memcpy(sds1.X[0], B, sizeof(B)); memcpy(sds1.X[0] + 16, Bx, sizeof(Bx));
+    memcpy(sds1.X[1], B, sizeof(B)); memcpy(sds1.X[1] + 16, Bx, sizeof(Bx));
+    memcpy(sds1.X[2], B, sizeof(B)); memcpy(sds1.X[2] + 16, Bx, sizeof(Bx));
+    memcpy(sds1.X[3], B, sizeof(B)); memcpy(sds1.X[3] + 16, Bx, sizeof(Bx));
 
     memcpy(&sds2, &sds1, sizeof(sds1));
 
     xor_salsa8_way4_ref(&sds1);
 
-    if (0 == memcmp(t1_B, sds1.sd[0].X, sizeof(t1_B))
-        && 0 == memcmp(t1_B, sds1.sd[1].X, sizeof(t1_B))
-        && 0 == memcmp(t1_B, sds1.sd[2].X, sizeof(t1_B))
-        && 0 == memcmp(t1_B, sds1.sd[3].X, sizeof(t1_B))
+    if (0 == memcmp(t1_B, sds1.X[0], sizeof(t1_B))
+        && 0 == memcmp(t1_B, sds1.X[1], sizeof(t1_B))
+        && 0 == memcmp(t1_B, sds1.X[2], sizeof(t1_B))
+        && 0 == memcmp(t1_B, sds1.X[3], sizeof(t1_B))
         )
     {
         printf("Test way4_ref Ok !\n");
@@ -467,9 +446,9 @@ int main(int argc, char *argv[])
     {
         printf("Test way4_SSE Failed !\n");
     }
-*/
 
-//    test_scanhash_scrypt();
+
+    test_scanhash_scrypt();
 
     test_sha256_t();
 //!!    test_uint32_t_to_mi128();

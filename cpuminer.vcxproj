@@ -234,6 +234,8 @@
       <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Release_Test|x64'">All</AssemblerOutput>
       <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Debug_Test|x64'">All</AssemblerOutput>
     </ClCompile>
+    <ClCompile Include="tests\test_main.cpp" />
+    <ClCompile Include="tests\test_vec4x32.cpp" />
     <ClCompile Include="uint256.cpp" />
     <ClCompile Include="util.c">
       <Optimization Condition="'$(Configuration)'=='Release'">Full</Optimization>
@@ -269,6 +271,7 @@
     <ClInclude Include="compat\cpuminer-config.h" />
     <ClInclude Include="elist.h" />
     <ClInclude Include="miner.h" />
+    <ClInclude Include="SIMD\vec4x32u.h" />
     <ClInclude Include="uint256.h" />
     <ClInclude Include="res\resource.h" />
     <ClInclude Include="utils_sse.h" />

@@ -1,6 +1,7 @@
 #pragma once
 #include <immintrin.h>
 #include <stdint.h>
+#include "utils_sse.h"
 
 extern const uint32_t sha256_h[8];
 extern const uint32_t sha256_k[64];
@@ -77,45 +78,6 @@ inline void sha256_transform_t(uint32_t *state, const uint32_t *block, int swap)
 }
 
 
-inline __m128i XOR_sse(__m128i x, __m128i y)
-{
-    return _mm_xor_si128(x, y);
-}
-
-inline __m128i XOR3_sse(__m128i x, __m128i y, __m128i z)
-{
-    return _mm_xor_si128(_mm_xor_si128(x, y), z);
-}
-
-inline __m128i OR_sse(__m128i x, __m128i y)
-{
-    return _mm_or_si128(x, y);
-}
-
-inline __m128i AND_sse(__m128i x, __m128i y)
-{
-    return _mm_and_si128(x, y);
-}
-
-inline __m128i ADD_sse(__m128i x, __m128i y)
-{
-    return _mm_add_epi32(x, y);
-}
-
-inline __m128i ADD4_sse(__m128i a1, __m128i a2, __m128i a3, __m128i a4)
-{
-    return _mm_add_epi32(_mm_add_epi32(a1, a2), _mm_add_epi32(a3, a4));
-}
-
-inline __m128i ROTR_sse(__m128i x, int s)
-{
-    return _mm_or_si128(_mm_slli_epi32(x, 32 - s), _mm_srli_epi32(x, s));
-}
-
-inline __m128i SHR_sse(__m128i x, int s)
-{
-    return _mm_srli_epi32(x, s);
-}
 
 inline __m128i Ch_sse(__m128i x, __m128i y, __m128i z) {
     return XOR_sse(AND_sse(x,XOR_sse(y,z)),z);

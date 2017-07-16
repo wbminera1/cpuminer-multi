@@ -66,6 +66,12 @@
     <ClCompile Include="algo\scrypt_sse.c">
       <Filter>algo</Filter>
     </ClCompile>
+    <ClCompile Include="tests\test_vec4x32.cpp">
+      <Filter>tests</Filter>
+    </ClCompile>
+    <ClCompile Include="tests\test_main.cpp">
+      <Filter>tests</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="compat.h">
@@ -129,6 +135,9 @@
     <ClInclude Include="algo\sha2_sse.h">
       <Filter>algo</Filter>
     </ClInclude>
+    <ClInclude Include="SIMD\vec4x32u.h">
+      <Filter>SIMD</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="compat">
@@ -154,6 +163,12 @@
     </Filter>
     <Filter Include="amd64-xmm6int">
       <UniqueIdentifier>{d08b1ded-64f5-41c2-86cc-4162617edbdd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SIMD">
+      <UniqueIdentifier>{ab96750f-0d0a-4431-9749-4f81e6d2f112}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tests">
+      <UniqueIdentifier>{10bcac48-5501-4062-8d96-f10ed62824eb}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
